@@ -32,12 +32,14 @@ jobs:
         with:
           node-version: '24'
 
-      # 4. تنظيف المشروع وتثبيت الاعتماديات
+      # 4. تنظيف المشروع وتثبيت الاعتماديات (بما فيها أدوات كاباسيتور لتفادي خطأ التشغيل)
       - name: 4. Deep Clean & Install
         run: |
           rm -rf node_modules package-lock.json android ios dist_web
           npm install --legacy-peer-deps
-          # تثبيت الإضافات الضرورية لضمان وجودها
+          # تثبيت أدوات كاباسيتور الأساسية محلياً لضمان عمل أوامر npx cap بدون أخطاء
+          npm install @capacitor/cli @capacitor/core @capacitor/android --save-dev --legacy-peer-deps
+          # تثبيت الإضافات الأخرى الضرورية
           npm install onesignal-cordova-plugin @capacitor/push-notifications @capacitor/local-notifications --save --legacy-peer-deps
           npm run build
 
