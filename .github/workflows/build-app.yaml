@@ -32,14 +32,12 @@ jobs:
         with:
           node-version: '24'
 
-      # 4. تنظيف المشروع وتثبيت الاعتماديات (مع تضمين أدوات كاباسيتور وأداة الـ assets لتفادي الخطأ)
+      # 4. تنظيف المشروع وتثبيت الاعتماديات
       - name: 4. Deep Clean & Install
         run: |
           rm -rf node_modules package-lock.json android ios dist_web
           npm install --legacy-peer-deps
-          # تثبيت أدوات كاباسيتور الأساسية وأداة الأيقونات محلياً لضمان عمل الأوامر بدون أخطاء
           npm install @capacitor/cli @capacitor/core @capacitor/android @capacitor/assets --save-dev --legacy-peer-deps
-          # تثبيت الإضافات الأخرى الضرورية
           npm install onesignal-cordova-plugin @capacitor/push-notifications @capacitor/local-notifications --save --legacy-peer-deps
           npm run build
 
@@ -49,8 +47,20 @@ jobs:
           npx cap add android
           npx cap sync android
 
-      # 6. حقن ملفات الهوية والميزات وإعدادات الأمان واستقرار التشفير (Firebase, App Identity & Security Config)
-      - name: 6. Inject Firebase, App Identity & Security Config
+      # 6. حقن استقرار التشفير على مستوى الجذر (لمنع إعادة إنشاء أو جلب إصدار 1.79 التالف)
+      - name: 6. Force Stable Encryption Version
+        shell: bash
+        run: |
+          ROOT_GRADLE="android/build.gradle"
+          echo "" >> $ROOT_GRADLE
+          echo "subprojects {" >> $ROOT_GRADLE
+          echo "    configurations.all {" >> $ROOT_GRADLE
+          echo "        resolutionStrategy.force 'org.bouncycastle:bcprov-jdk18on:1.77'" >> $ROOT_GRADLE
+          echo "    }" >> $ROOT_GRADLE
+          echo "}" >> $ROOT_GRADLE
+
+      # 7. حقن ملفات الهوية والميزات وإعدادات الأمان (Firebase, App Identity & Security Config)
+      - name: 7. Inject Firebase, App Identity & Security Config
         shell: bash
         run: |
           # حقن ملف جوجل وتعديل الـ package_name إلى المعرّف الخاص بفرما تيك
@@ -78,7 +88,6 @@ jobs:
           # ملفات الإعدادات
           STRINGS="android/app/src/main/res/values/strings.xml"
           APP_GRADLE="android/app/build.gradle"
-          ROOT_GRADLE="android/build.gradle"
           MANIFEST="android/app/src/main/AndroidManifest.xml"
           
           # تعديل اسم التطبيق ليصبح (فرما تيك) والحزمة لـ (com.pharmatech.app)
@@ -88,14 +97,6 @@ jobs:
           
           # منع النسخ الاحتياطي لبيانات التطبيق لحماية بيانات الصيدلية
           sed -i 's/<application /&android:allowBackup="false" /' $MANIFEST
-
-          # فرض إصدار أمان مستقر لمكتبة التشفير على مستوى كل المشاريع والوحدات الفرعية (تشمل capacitor-android) لمنع تلف ملف الـ Jar
-          echo "" >> $ROOT_GRADLE
-          echo "subprojects {" >> $ROOT_GRADLE
-          echo "    configurations.all {" >> $ROOT_GRADLE
-          echo "        resolutionStrategy.force 'org.bouncycastle:bcprov-jdk18on:1.77'" >> $ROOT_GRADLE
-          echo "    }" >> $ROOT_GRADLE
-          echo "}" >> $ROOT_GRADLE
 
           # إنشاء ملف أمان الشبكة لفرض HTTPS على دومين Vercel الخاص بك
           mkdir -p android/app/src/main/res/xml
@@ -121,16 +122,16 @@ jobs:
           # إضافة معرفات Start.io داخل وسم <application> في المانيفست
           sed -i '/<application[^>]*>/a \        <meta-data android:name="com.startapp.sdk.APPLICATION_ID" android:value="203477356" />' $MANIFEST
 
-      # 7. توليد الأيقونات وصور البداية للتطبيق
-      - name: 7. Generate App Icons & Splash
+      # 8. توليد الأيقونات وصور البداية للتطبيق
+      - name: 8. Generate App Icons & Splash
         run: |
           mkdir -p assets
           cp assets/icon-foreground.png assets/icon-only.png
           cp assets/icon-foreground.png assets/icon-background.png
           npx capacitor-assets generate --android
 
-      # 8. بناء ملفات أندرويد الثنائية (مع تفريغ الكاش وتضمين خيارات الذاكرة)
-      - name: 8. Build Android Binaries
+      # 9. بناء ملفات أندرويد الثنائية (مع تفريغ الكاش وتضمين خيارات الذاكرة)
+      - name: 9. Build Android Binaries
         run: |
           rm -rf ~/.gradle/caches/
           cd android
@@ -139,8 +140,8 @@ jobs:
           ./gradlew assembleRelease --no-daemon -Dorg.gradle.jvmargs="-Xmx3g -XX:+HeapDumpOnOutOfMemoryError"
           ./gradlew bundleRelease --no-daemon -Dorg.gradle.jvmargs="-Xmx3g -XX:+HeapDumpOnOutOfMemoryError"
 
-      # 9. توقيع ملفات الـ APK والـ AAB
-      - name: 9. Sign APK & AAB
+      # 10. توقيع ملفات الـ APK والـ AAB
+      - name: 10. Sign APK & AAB
         run: |
           # توليد مفتاح توقيع مؤقت خاص بفرما تيك
           keytool -genkey -v -keystore pharmatech_release.jks -alias pharmatech_alias -keyalg RSA -keysize 2048 -validity 10000 \
@@ -157,8 +158,8 @@ jobs:
           jarsigner -keystore pharmatech_release.jks -storepass "pharmatech_pass_2026" "$AAB_PATH" pharmatech_alias
           cp "$AAB_PATH" Pharmatech-Final-Signed.aab
 
-      # 10. نشر النسخة النهائية كـ Release على المستودع
-      - name: 10. Publish Release
+      # 11. نشر النسخة النهائية كـ Release على المستودع
+      - name: 11. Publish Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ github.run_number }}
