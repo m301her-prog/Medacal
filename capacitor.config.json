@@ -1,6 +1,6 @@
 {
   "appId": "com.medacal.pharmacy",
-  "appName": "Medacal",
+  "appName": "فرما تيك",
   "webDir": "dist",
   "bundledWebRuntime": false,
   "server": {

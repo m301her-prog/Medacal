@@ -13,3 +13,5 @@ android/*.jks
 android/*.keystore
 *.jks
 *.keystore
+__pycache__/
+*.pyc

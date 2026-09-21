@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">Medacal</string>
-    <string name="title_activity_main">Medacal</string>
+    <string name="app_name">فرما تيك</string>
+    <string name="title_activity_main">فرما تيك</string>
     <string name="package_name">com.medacal.pharmacy</string>
     <string name="custom_url_scheme">com.medacal.pharmacy</string>
 </resources>
