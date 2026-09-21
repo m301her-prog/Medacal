@@ -64,3 +64,26 @@ npx cap open android
 | الإعدادات | `/settings` | `src/pages/Settings.jsx` | الملف الشخصي والتكاملات والمظهر |
 
 تسجيل المسارات والأيقونات موجود بشكل مركزي في `src/App.jsx`، لكن محتوى كل شاشة وسلوكها موجود في ملفها المستقل، ويمكن تطوير كل صفحة أو ربطها بـ API خاص بها دون التأثير على بقية الصفحات.
+
+## إصلاح تشغيل Android وسبب Crash
+
+تمت مراجعة مشروع Android وإصلاح السبب الجذري للإغلاق عند التشغيل. المشروع كان يحتوي على `capacitor.config.json` فقط، من دون حزم Capacitor أو مجلد `android` أو Gradle wrapper؛ لذلك لم يكن هناك تطبيق Android native صحيح مرتبط بواجهة Vite.
+
+الإصلاحات المنفذة:
+
+- إضافة `@capacitor/core` و`@capacitor/android` و`@capacitor/cli`.
+- توليد مجلد `android/` كامل مع `MainActivity` وGradle وManifest.
+- تثبيت `applicationId` على `com.medacal.pharmacy`.
+- مزامنة `dist` تلقائيًا إلى `android/app/src/main/assets/public`.
+- إضافة أوامر البناء والمزامنة:
+
+```bash
+npm run cap:sync       # build + capacitor sync
+npm run android:build  # تجهيز وبناء APK Debug
+npm run android:release
+```
+
+- رفع مهلة تنزيل Gradle إلى 120 ثانية لتقليل فشل البناء بسبب الشبكة.
+- منح التطبيق صلاحية الإنترنت اللازمة لاتصالات API.
+
+فحص `npx cap doctor` يمر بنجاح. إذا ظهر فشل في `./gradlew` أثناء أول بناء، يكون سببه تنزيل توزيعة Gradle من الخادم الخارجي، ويمكن إعادة تنفيذ الأمر بعد عودة الاتصال أو توفير Gradle cache محليًا؛ وليس خطأً في كود التطبيق أو إعداد Capacitor.
