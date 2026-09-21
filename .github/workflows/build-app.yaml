@@ -78,6 +78,7 @@ jobs:
           # ملفات الإعدادات
           STRINGS="android/app/src/main/res/values/strings.xml"
           APP_GRADLE="android/app/build.gradle"
+          ROOT_GRADLE="android/build.gradle"
           MANIFEST="android/app/src/main/AndroidManifest.xml"
           
           # تعديل اسم التطبيق ليصبح (فرما تيك) والحزمة لـ (com.pharmatech.app)
@@ -88,11 +89,13 @@ jobs:
           # منع النسخ الاحتياطي لبيانات التطبيق لحماية بيانات الصيدلية
           sed -i 's/<application /&android:allowBackup="false" /' $MANIFEST
 
-          # فرض إصدار أمان مستقرة لمكتبة التشفير لمنع خطأ الـ Jar الفاسد (bcprov)
-          echo "" >> $APP_GRADLE
-          echo "configurations.all {" >> $APP_GRADLE
-          echo "    resolutionStrategy.force 'org.bouncycastle:bcprov-jdk18on:1.77'" >> $APP_GRADLE
-          echo "}" >> $APP_GRADLE
+          # فرض إصدار أمان مستقر لمكتبة التشفير على مستوى كل المشاريع والوحدات الفرعية (تشمل capacitor-android) لمنع تلف ملف الـ Jar
+          echo "" >> $ROOT_GRADLE
+          echo "subprojects {" >> $ROOT_GRADLE
+          echo "    configurations.all {" >> $ROOT_GRADLE
+          echo "        resolutionStrategy.force 'org.bouncycastle:bcprov-jdk18on:1.77'" >> $ROOT_GRADLE
+          echo "    }" >> $ROOT_GRADLE
+          echo "}" >> $ROOT_GRADLE
 
           # إنشاء ملف أمان الشبكة لفرض HTTPS على دومين Vercel الخاص بك
           mkdir -p android/app/src/main/res/xml
