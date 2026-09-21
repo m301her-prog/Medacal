@@ -69,3 +69,4 @@ jobs:
           generate_release_notes: true
           files: |
             android/app/build/outputs/apk/debug/Medacal-debug.apk
+            android/app/build/outputs/bundle/release/Medacal-production.aab

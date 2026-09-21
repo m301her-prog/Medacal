@@ -15,6 +15,7 @@ rm -rf node_modules dist android
 npm ci
 npm run build
 npx cap add android
+npx @capacitor/assets generate --android
 npx cap sync android
 
 # Capacitor regenerates the wrapper; keep first-run downloads reliable.
@@ -72,6 +73,9 @@ fi
 
 if [[ -f android/app/build/outputs/apk/debug/app-debug.apk ]]; then
   cp android/app/build/outputs/apk/debug/app-debug.apk android/app/build/outputs/apk/debug/Medacal-debug.apk
+fi
+if [[ -f android/app/build/outputs/bundle/release/app-release.aab ]]; then
+  cp android/app/build/outputs/bundle/release/app-release.aab android/app/build/outputs/bundle/release/Medacal-production.aab
 fi
 
 printf '\nBuild outputs:\n'
