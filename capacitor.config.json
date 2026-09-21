@@ -1,1 +1,30 @@
-{"appId":"com.medacal.pharmacy","appName":"Medacal","webDir":"dist","bundledWebRuntime":false,"server":{"androidScheme":"https"}}
+{
+  "appId": "com.pharmatech.app",
+  "appName": "فرما تيك",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "https",
+    "cleartext": true
+  },
+  "plugins": {
+    "PushNotifications": {
+      "presentationOptions": ["badge", "sound", "alert"]
+    },
+    "LocalNotifications": {
+      "smallIcon": "ic_stat_name",
+      "iconColor": "#FFC0CB"
+    },
+    "CapacitorHttp": {
+      "enabled": true
+    },
+    "AdMob": {
+      "initializeOnStartup": true
+    }
+  },
+  "android": {
+    "allowMixedContent": true,
+    "buildOptions": {
+      "releaseType": "APK"
+    }
+  }
+}
