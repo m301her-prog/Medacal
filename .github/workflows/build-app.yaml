@@ -1,4 +1,4 @@
-name: "Pharmatech Clean Production Build"
+name: "MY DEPT Clean Production Build"
 
 on:
   push:
@@ -32,14 +32,12 @@ jobs:
         with:
           node-version: '24'
 
-      # 4. تنظيف المشروع وتثبيت الاعتماديات (مع تضمين أدوات كاباسيتور وأداة الـ assets لتفادي الخطأ)
+      # 4. تنظيف المشروع وتثبيت الاعتماديات
       - name: 4. Deep Clean & Install
         run: |
           rm -rf node_modules package-lock.json android ios dist_web
           npm install --legacy-peer-deps
-          # تثبيت أدوات كاباسيتور الأساسية وأداة الأيقونات محلياً لضمان عمل الأوامر بدون أخطاء
-          npm install @capacitor/cli @capacitor/core @capacitor/android @capacitor/assets --save-dev --legacy-peer-deps
-          # تثبيت الإضافات الأخرى الضرورية
+          # تثبيت الإضافات الضرورية لضمان وجودها
           npm install onesignal-cordova-plugin @capacitor/push-notifications @capacitor/local-notifications --save --legacy-peer-deps
           npm run build
 
@@ -49,23 +47,23 @@ jobs:
           npx cap add android
           npx cap sync android
 
-      # 6. حقن ملفات الهوية والميزات وإعدادات الأمان (Firebase, App Identity & Security Config)
-      - name: 6. Inject Firebase, App Identity & Security Config
+      # 6. حقن ملفات الهوية والميزات وإعدادات الأمان (Firebase, App Identity, Start.io & Security Config)
+      - name: 6. Inject Firebase, App Identity, Ad Network & Security Config
         shell: bash
         run: |
-          # حقن ملف جوجل وتعديل الـ package_name إلى المعرّف الخاص بفرما تيك
+          # حقن ملف جوجل وتعديل الـ package_name إلى المعرّف الخاص بنا
           cat <<EOF > android/app/google-services.json
           {
             "project_info": {
               "project_number": "162488255991",
-              "project_id": "pharmatech-app",
-              "storage_bucket": "pharmatech-app.firebasestorage.app"
+              "project_id": "raqqa-43dc8",
+              "storage_bucket": "raqqa-43dc8.firebasestorage.app"
             },
             "client": [
               {
                 "client_info": {
                   "mobilesdk_app_id": "1:162488255991:android:73d6299f11a1b7aec61af2",
-                  "android_client_info": { "package_name": "com.pharmatech.app" }
+                  "android_client_info": { "package_name": "com.mydept.app" }
                 },
                 "api_key": [ { "current_key": "AIzaSyAKjsgnoHnGGr3urhm6Kpu7RvxN2dp6sJQ" } ],
                 "services": { "appinvite_service": { "other_platform_oauth_client": [] } }
@@ -80,12 +78,12 @@ jobs:
           APP_GRADLE="android/app/build.gradle"
           MANIFEST="android/app/src/main/AndroidManifest.xml"
           
-          # تعديل اسم التطبيق ليصبح (فرما تيك) والحزمة لـ (com.pharmatech.app)
-          sed -i 's/<string name="app_name">.*<\/string>/<string name="app_name">فرما تيك<\/string>/' $STRINGS
-          sed -i 's/namespace ".*"/namespace "com.pharmatech.app"/' $APP_GRADLE
-          sed -i 's/applicationId ".*"/applicationId "com.pharmatech.app"/' $APP_GRADLE
+          # تعديل اسم التطبيق ليصبح (MY DEPT) والحزمة لـ (com.mydept.app)
+          sed -i 's/<string name="app_name">.*<\/string>/<string name="app_name">MY DEPT<\/string>/' $STRINGS
+          sed -i 's/namespace ".*"/namespace "com.mydept.app"/' $APP_GRADLE
+          sed -i 's/applicationId ".*"/applicationId "com.mydept.app"/' $APP_GRADLE
           
-          # منع النسخ الاحتياطي لبيانات التطبيق لحماية بيانات الصيدلية
+          # منع النسخ الاحتياطي لبيانات التطبيق لحماية سجلات الديون
           sed -i 's/<application /&android:allowBackup="false" /' $MANIFEST
 
           # إنشاء ملف أمان الشبكة لفرض HTTPS على دومين Vercel الخاص بك
@@ -116,46 +114,47 @@ jobs:
       - name: 7. Generate App Icons & Splash
         run: |
           mkdir -p assets
+          # استخدام ملف الـ foreground لتغليف الأيقونة الأساسية والخلفيات بناءً على طلبك
           cp assets/icon-foreground.png assets/icon-only.png
           cp assets/icon-foreground.png assets/icon-background.png
           npx capacitor-assets generate --android
 
-      # 8. بناء ملفات أندرويد الثنائية مع تحسين استهلاك الذاكرة والسرعة
+      # 8. بناء ملفات أندرويد الثنائية
       - name: 8. Build Android Binaries
         run: |
           cd android
           chmod +x gradlew
           ./gradlew clean
-          ./gradlew assembleRelease --no-daemon -Dorg.gradle.jvmargs="-Xmx3g -XX:+HeapDumpOnOutOfMemoryError"
-          ./gradlew bundleRelease --no-daemon -Dorg.gradle.jvmargs="-Xmx3g -XX:+HeapDumpOnOutOfMemoryError"
+          ./gradlew assembleRelease
+          ./gradlew bundleRelease
 
       # 9. توقيع ملفات الـ APK والـ AAB
       - name: 9. Sign APK & AAB
         run: |
-          # توليد مفتاح توقيع مؤقت خاص بفرما تيك
-          keytool -genkey -v -keystore pharmatech_release.jks -alias pharmatech_alias -keyalg RSA -keysize 2048 -validity 10000 \
-            -storepass "pharmatech_pass_2026" -keypass "pharmatech_pass_2026" \
-            -dname "CN=PharmatechApp, OU=Dev, O=Pharmatech, L=Cairo, S=Egypt, C=EG"
+          # توليد مفتاح توقيع مؤقت خاص بـ MY DEPT
+          keytool -genkey -v -keystore nawh_release.jks -alias nawh_alias -keyalg RSA -keysize 2048 -validity 10000 \
+            -storepass "nawh_pass_2026" -keypass "nawh_pass_2026" \
+            -dname "CN=MyDeptApp, OU=Dev, O=MyDept, L=Cairo, S=Egypt, C=EG"
           
           # توقيع الـ APK
           APK_PATH=$(find android/app/build/outputs/apk/release/ -name "*.apk" | head -n 1)
-          /usr/local/lib/android/sdk/build-tools/34.0.0/apksigner sign --ks pharmatech_release.jks \
-            --ks-pass pass:"pharmatech_pass_2026" --out Pharmatech-Final-Signed.apk "$APK_PATH"
+          /usr/local/lib/android/sdk/build-tools/34.0.0/apksigner sign --ks nawh_release.jks \
+            --ks-pass pass:"nawh_pass_2026" --out Nawh-Final-Signed.apk "$APK_PATH"
           
           # توقيع الـ AAB
           AAB_PATH=$(find android/app/build/outputs/bundle/release/ -name "*.aab" | head -n 1)
-          jarsigner -keystore pharmatech_release.jks -storepass "pharmatech_pass_2026" "$AAB_PATH" pharmatech_alias
-          cp "$AAB_PATH" Pharmatech-Final-Signed.aab
+          jarsigner -keystore nawh_release.jks -storepass "nawh_pass_2026" "$AAB_PATH" nawh_alias
+          cp "$AAB_PATH" Nawh-Final-Signed.aab
 
       # 10. نشر النسخة النهائية كـ Release على المستودع
       - name: 10. Publish Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ github.run_number }}
-          name: "Pharmatech Production Build v${{ github.run_number }}"
+          name: "MY DEPT Production Build v${{ github.run_number }}"
           files: |
-            Pharmatech-Final-Signed.apk
-            Pharmatech-Final-Signed.aab
-            pharmatech_release.jks
+            Nawh-Final-Signed.apk
+            Nawh-Final-Signed.aab
+            nawh_release.jks
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
