@@ -67,7 +67,11 @@ chmod +x android/gradlew
 if [[ "$BUILD_VARIANT" == "debug" ]]; then
   (cd android && ./gradlew clean assembleDebug --no-daemon)
 else
-  (cd android && ./gradlew clean assembleRelease bundleRelease --no-daemon)
+  (cd android && ./gradlew clean assembleDebug assembleRelease bundleRelease --no-daemon)
+fi
+
+if [[ -f android/app/build/outputs/apk/debug/app-debug.apk ]]; then
+  cp android/app/build/outputs/apk/debug/app-debug.apk android/app/build/outputs/apk/debug/Medacal-debug.apk
 fi
 
 printf '\nBuild outputs:\n'
