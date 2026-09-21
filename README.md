@@ -114,3 +114,16 @@ ANDROID_KEY_PASSWORD
 ```
 
 لا يتم إنشاء أو رفع keystore تجريبي، ولا توجد مفاتيح توقيع أو مفاتيح Firebase داخل المستودع. Workflow الإنتاج الوحيد هو [android-production.yml](./.github/workflows/android-production.yml)، ويستخدم Java 21 وNode 22 و`npm ci` وبناءً نظيفًا في كل تشغيل.
+
+## AAB وأيقونات Android
+
+كل بناء نظيف يستخدم `assets/icon-foreground.png` كمصدر الهوية البصرية. قبل تشغيل `@capacitor/assets` يتم تطبيع الملف إلى PNG حقيقي وإنشاء مصادر مربعة قياسية (`icon.png`, `icon-background.png`, `icon-only.png`) ثم توليد أيقونات جميع كثافات Android.
+
+الـ Release ينتج:
+
+```text
+Medacal-debug.apk
+Medacal-production.aab
+```
+
+ملف AAB هو حزمة Google Play. إذا لم تكن أسرار التوقيع الأربعة موجودة، يبقى AAB غير موقّع لأغراض البناء/المراجعة؛ ولإرساله إلى Google Play يجب ضبط `ANDROID_KEYSTORE_BASE64` وبيانات المفتاح في GitHub Secrets. أما APK Debug المنشور فهو قابل للتثبيت المباشر للاختبار ويحمل أيقونات Medacal المولدة من المصدر المذكور.
