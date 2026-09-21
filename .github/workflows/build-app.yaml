@@ -49,7 +49,7 @@ jobs:
           npx cap add android
           npx cap sync android
 
-      # 6. حقن ملفات الهوية والميزات وإعدادات الأمان (Firebase, App Identity & Security Config)
+      # 6. حقن ملفات الهوية والميزات وإعدادات الأمان واستقرار التشفير (Firebase, App Identity & Security Config)
       - name: 6. Inject Firebase, App Identity & Security Config
         shell: bash
         run: |
@@ -88,6 +88,12 @@ jobs:
           # منع النسخ الاحتياطي لبيانات التطبيق لحماية بيانات الصيدلية
           sed -i 's/<application /&android:allowBackup="false" /' $MANIFEST
 
+          # فرض إصدار أمان مستقرة لمكتبة التشفير لمنع خطأ الـ Jar الفاسد (bcprov)
+          echo "" >> $APP_GRADLE
+          echo "configurations.all {" >> $APP_GRADLE
+          echo "    resolutionStrategy.force 'org.bouncycastle:bcprov-jdk18on:1.77'" >> $APP_GRADLE
+          echo "}" >> $APP_GRADLE
+
           # إنشاء ملف أمان الشبكة لفرض HTTPS على دومين Vercel الخاص بك
           mkdir -p android/app/src/main/res/xml
           cat <<EOF > android/app/src/main/res/xml/network_security_config.xml
@@ -120,7 +126,7 @@ jobs:
           cp assets/icon-foreground.png assets/icon-background.png
           npx capacitor-assets generate --android
 
-      # 8. بناء ملفات أندرويد الثنائية (مع تفريغ الكاش لمنع تلف ملفات التشفير وتضمين خيارات الذاكرة)
+      # 8. بناء ملفات أندرويد الثنائية (مع تفريغ الكاش وتضمين خيارات الذاكرة)
       - name: 8. Build Android Binaries
         run: |
           rm -rf ~/.gradle/caches/
