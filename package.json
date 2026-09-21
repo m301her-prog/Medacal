@@ -39,7 +39,7 @@
     "jspdf": "^2.5.1",
     "jspdf-autotable": "^3.8.2",
     "html2pdf.js": "^0.10.2",
-    "onesignal-cordova-plugin": "^15.0.0"
+    "onesignal-cordova-plugin": "latest"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "latest",
