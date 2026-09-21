@@ -1,4 +1,4 @@
-   name: "Formatech Clean Production Build"
+name: "Formatech Clean Production Build"
 
 on:
   push:
