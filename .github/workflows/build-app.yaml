@@ -1,4 +1,4 @@
-name: "Formatech Clean Production Build"
+   name: "Formatech Clean Production Build"
 
 on:
   push:
@@ -110,13 +110,16 @@ jobs:
           # إضافة معرفات Start.io داخل وسم <application> في المانيفست
           sed -i '/<application[^>]*>/a \        <meta-data android:name="com.startapp.sdk.APPLICATION_ID" android:value="203477356" />' $MANIFEST
 
-      # 7. توليد الأيقونات وصور البداية للتطبيق
+      # 7. توليد الأيقونات وصور البداية للتطبيق (تم التصحيح هنا)
       - name: 7. Generate App Icons & Splash
         run: |
           mkdir -p assets
-          cp assets/icon-foreground.png assets/icon-only.png
-          cp assets/icon-foreground.png assets/icon-background.png
-          npx capacitor-assets generate --android
+          # تأكد من وجود صورة icon-foreground.png في مجلد assets محلياً في مشروعك
+          if [ -f "assets/icon-foreground.png" ]; then
+            cp assets/icon-foreground.png assets/icon-only.png
+            cp assets/icon-foreground.png assets/icon-background.png
+          fi
+          npx @capacitor/assets generate --android
 
       # 8. بناء ملفات أندرويد الثنائية
       - name: 8. Build Android Binaries
