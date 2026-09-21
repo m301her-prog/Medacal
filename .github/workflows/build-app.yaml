@@ -120,14 +120,14 @@ jobs:
           cp assets/icon-foreground.png assets/icon-background.png
           npx capacitor-assets generate --android
 
-      # 8. بناء ملفات أندرويد الثنائية
+      # 8. بناء ملفات أندرويد الثنائية مع تحسين استهلاك الذاكرة والسرعة
       - name: 8. Build Android Binaries
         run: |
           cd android
           chmod +x gradlew
           ./gradlew clean
-          ./gradlew assembleRelease
-          ./gradlew bundleRelease
+          ./gradlew assembleRelease --no-daemon -Dorg.gradle.jvmargs="-Xmx3g -XX:+HeapDumpOnOutOfMemoryError"
+          ./gradlew bundleRelease --no-daemon -Dorg.gradle.jvmargs="-Xmx3g -XX:+HeapDumpOnOutOfMemoryError"
 
       # 9. توقيع ملفات الـ APK والـ AAB
       - name: 9. Sign APK & AAB
