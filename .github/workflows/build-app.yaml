@@ -120,9 +120,10 @@ jobs:
           cp assets/icon-foreground.png assets/icon-background.png
           npx capacitor-assets generate --android
 
-      # 8. بناء ملفات أندرويد الثنائية مع تحسين استهلاك الذاكرة والسرعة
+      # 8. بناء ملفات أندرويد الثنائية (مع تفريغ الكاش لمنع تلف ملفات التشفير وتضمين خيارات الذاكرة)
       - name: 8. Build Android Binaries
         run: |
+          rm -rf ~/.gradle/caches/
           cd android
           chmod +x gradlew
           ./gradlew clean
