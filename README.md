@@ -87,3 +87,30 @@ npm run android:release
 - منح التطبيق صلاحية الإنترنت اللازمة لاتصالات API.
 
 فحص `npx cap doctor` يمر بنجاح. إذا ظهر فشل في `./gradlew` أثناء أول بناء، يكون سببه تنزيل توزيعة Gradle من الخادم الخارجي، ويمكن إعادة تنفيذ الأمر بعد عودة الاتصال أو توفير Gradle cache محليًا؛ وليس خطأً في كود التطبيق أو إعداد Capacitor.
+
+## دورة Android Production النظيفة
+
+تم توحيد بناء Android في مسار واحد قابل للتكرار من الصفر. السكربت [`scripts/android-clean-build.sh`](./scripts/android-clean-build.sh) ينفذ بالترتيب: حذف `node_modules` و`dist` و`android`، تثبيت الاعتماديات من `package-lock.json` عبر `npm ci`، بناء Vite، توليد منصة Android من `capacitor.config.json`، مزامنة الملفات، ضبط رقم الإصدار، ثم بناء Release.
+
+للتشغيل المحلي:
+
+```bash
+npm run android:clean-build
+```
+
+ولنسخة Debug:
+
+```bash
+BUILD_VARIANT=debug npm run android:clean-build
+```
+
+يمكن توقيع نسخة Release من خلال متغيرات بيئة محلية أو GitHub Secrets فقط:
+
+```text
+ANDROID_KEYSTORE_BASE64
+ANDROID_KEYSTORE_PASSWORD
+ANDROID_KEY_ALIAS
+ANDROID_KEY_PASSWORD
+```
+
+لا يتم إنشاء أو رفع keystore تجريبي، ولا توجد مفاتيح توقيع أو مفاتيح Firebase داخل المستودع. Workflow الإنتاج الوحيد هو [android-production.yml](./.github/workflows/android-production.yml)، ويستخدم Java 21 وNode 22 و`npm ci` وبناءً نظيفًا في كل تشغيل.

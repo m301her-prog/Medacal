@@ -3,3 +3,13 @@ dist
 .env
 .env.*
 !.env.example
+
+# Android local build and signing material
+android/.gradle
+android/**/build
+android/local.properties
+android/keystore.properties
+android/*.jks
+android/*.keystore
+*.jks
+*.keystore
