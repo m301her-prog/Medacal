@@ -2,63 +2,28 @@ import {useEffect,useState} from 'react';
 import {Download,Eye,FileText,Printer,Receipt,Search,Share2} from 'lucide-react';
 import {useNavigate, useParams} from 'react-router-dom';
 import api from '../lib/ApiService';
-import html2pdf from 'html2pdf.js';
-import { Filesystem, Directory } from '@capacitor/filesystem';
-import { Share } from '@capacitor/share';
-import { Capacitor } from '@capacitor/core';
 
 const localInvoices=()=>{try{return JSON.parse(localStorage.getItem('formatech.invoices')||'[]')}catch{return[]}};
 export default function Invoices(){const {number}=useParams();const navigate=useNavigate();const [invoices,setInvoices]=useState(localInvoices);const [query,setQuery]=useState('');const selected=number?invoices.find(x=>x.invoice_number===decodeURIComponent(number)):null;useEffect(()=>{api.listSales().then(d=>{if(d.sales?.length)setInvoices(x=>merge(d.sales,x))}).catch(()=>{} )},[]);if(selected)return <InvoiceView invoice={selected} onBack={()=>navigate('/invoices')}/>;const filtered=invoices.filter(x=>`${x.invoice_number} ${x.payment_type}`.toLowerCase().includes(query.toLowerCase()));return <main className="module-page invoices-page"><div className="page-title"><div><div className="eyebrow"><Receipt size={15}/> إدارة الفواتير</div><h1>الفواتير والمبيعات</h1><p>عرض واضح لكل فاتورة مع خيار الطباعة والحفظ PDF.</p></div><button className="primary" onClick={()=>navigate('/pos')}><Receipt size={17}/> فاتورة جديدة</button></div><section className="panel"><div className="table-toolbar"><div><h2>سجل الفواتير</h2><p>{filtered.length} فاتورة</p></div><div className="search-box"><Search size={16}/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="ابحث برقم الفاتورة"/></div></div>{filtered.length?<div className="data-table"><div className="table-row invoice-row table-head"><span>رقم الفاتورة</span><span>التاريخ</span><span>الدفع</span><span>الإجمالي</span><span>الحالة</span><span/></div>{filtered.map(x=><div className="table-row invoice-row" key={x.invoice_number}><span><b>{x.invoice_number}</b><small>{x.items?.length||0} أصناف</small></span><span>{formatDate(x.created_at)}</span><span>{paymentLabel(x.payment_type)}</span><span><strong>{money(x.total_amount)} ر.س</strong></span><span><em className="invoice-status">مكتملة</em></span><button className="icon-button" title="عرض الفاتورة" onClick={()=>navigate(`/invoices/${encodeURIComponent(x.invoice_number)}`)}><Eye size={16}/></button></div>)}</div>:<div className="empty-state invoice-empty"><FileText size={34}/><b>لا توجد فواتير بعد</b><span>أنشئ فاتورة من نقطة البيع وستظهر هنا.</span></div>}</section></main>}
 export function InvoiceView({invoice,onBack}){
   
   const handleShareOrDownload = async () => {
-    // تجهيز عنصر الـ HTML الخاص بالفاتورة لتحويله إلى PDF بدقة عالية
-    const paperElement = document.getElementById('invoice-paper-content');
-    if (!paperElement) return;
+    const invoiceText = `فاتورة بيع: ${invoice.invoice_number}\nالتاريخ: ${formatDate(invoice.created_at, true)}\nطريقة الدفع: ${paymentLabel(invoice.payment_type)}\nالإجمالي: ${money(invoice.total_amount)} ر.س\n-------------------\nالأصناف:\n` + 
+      (invoice.items||[]).map(x => `- ${x.name||x.trade_name||'دواء'} (${x.quantity}) : ${money(Number(x.unit_price)*Number(x.quantity))} ر.س`).join('\n') +
+      `\n-------------------\nشكراً لتعاملكم مع فرما تيك`;
 
-    const fileName = `فاتورة_${invoice.invoice_number}.pdf`;
-    const opt = {
-      margin: 10,
-      filename: fileName,
-      image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { scale: 2 },
-      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-    };
-
-    // 1. في حالة المتصفح العادي (Web)
-    if (!Capacitor.isNativePlatform()) {
+    if (navigator.share) {
       try {
-        html2pdf().set(opt).from(paperElement).save();
+        await navigator.share({
+          title: `فاتورة رقم ${invoice.invoice_number}`,
+          text: invoiceText,
+        });
       } catch (err) {
-        console.error('خطأ تحضير PDF للويب:', err);
+        console.log('Error sharing:', err);
       }
-      return;
-    }
-
-    // 2. في حالة التطبيقات الذكية (Android / iOS عبر Capacitor)
-    try {
-      const pdfBase64 = await html2pdf()
-        .set(opt)
-        .from(paperElement)
-        .outputPdf('datauristring');
-
-      const base64Data = pdfBase64.split(',')[1];
-
-      const savedFile = await Filesystem.writeFile({
-        path: fileName,
-        data: base64Data,
-        directory: Directory.Cache
-      });
-
-      await Share.share({
-        title: fileName,
-        text: `إليك فاتورة المبيعات رقم ${invoice.invoice_number}`,
-        url: savedFile.uri,
-        dialogTitle: 'مشاركة أو حفظ ملف الفاتورة'
-      });
-    } catch (error) {
-      console.error('حدث خطأ أثناء حفظ أو مشاركة الفاتورة:', error);
-      alert('تعذر فتح بوابة المشاركة: ' + (error.message || error));
+    } else {
+      // فتح نافذة الطباعة ليتمكن المستخدم من حفظ الفاتورة كـ PDF مباشرة من المتصفح
+      window.print();
     }
   };
 
