@@ -60,6 +60,7 @@ const service = {
   createMedicine: (medicine, options) => request(API_ENDPOINTS.medicines, {method: 'POST', body: medicine, ...options}),
   removeMedicine: (id, options) => request(API_ENDPOINTS.medicines, {method: 'DELETE', body: {id}, ...options}),
   listCustomers: (options) => request(API_ENDPOINTS.customers, {method: 'GET', ...options}),
+  listSales: (options) => request(API_ENDPOINTS.sales, {method: 'GET', ...options}),
   createSale: (sale, options) => request(API_ENDPOINTS.sales, {method: 'POST', body: sale, ...options}),
   dashboard: (options) => request(API_ENDPOINTS.dashboard, {method: 'GET', ...options}),
   integration: (payload, options) => request(API_ENDPOINTS.integrations, {method: 'POST', body: payload, ...options}),

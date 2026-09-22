@@ -15,6 +15,7 @@
     "android:clean-build": "bash scripts/android-clean-build.sh"
   },
   "dependencies": {
+    "@capacitor-mlkit/barcode-scanning": "^8.2.1",
     "@capacitor/android": "^8.5.2",
     "@capacitor/app": "^8.1.1",
     "@capacitor/core": "^8.5.2",
