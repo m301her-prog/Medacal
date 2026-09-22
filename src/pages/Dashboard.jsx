@@ -51,10 +51,10 @@ export default function Dashboard(){
           <span className="grid-hint">8 وحدات متاحة</span>
         </div>
 
-        {/* عرض الشبكة مباشرة بتنسيقات مضمنة */}
+        {/* عرض الشبكة بتصميم عمودي مطابق لصورة العرض */}
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
           gap: '20px',
           marginTop: '20px'
         }}>
@@ -64,48 +64,63 @@ export default function Dashboard(){
               key={to}
               style={{
                 display: 'flex',
+                flexDirection: 'column',
                 alignItems: 'center',
-                gap: '16px',
+                textAlign: 'center',
                 background: '#ffffff',
-                padding: '20px',
-                borderRadius: '16px',
+                padding: '24px 16px',
+                borderRadius: '20px',
                 border: '1px solid #eaeaea',
                 textDecoration: 'none',
-                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.03)',
+                boxShadow: '0 6px 16px rgba(0, 0, 0, 0.04)',
                 position: 'relative',
                 overflow: 'hidden',
-                transition: 'all 0.3s ease'
+                transition: 'all 0.3s ease',
+                minHeight: '180px',
+                justifyContent: 'space-between'
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'translateY(-4px)';
-                e.currentTarget.style.boxShadow = '0 10px 25px rgba(0, 0, 0, 0.08)';
-                e.currentTarget.style.borderColor = '#35d6b1';
+                e.currentTarget.style.transform = 'translateY(-6px)';
+                e.currentTarget.style.boxShadow = '0 12px 30px rgba(0, 0, 0, 0.08)';
+                e.currentTarget.style.borderColor = tone.color;
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.03)';
+                e.currentTarget.style.boxShadow = '0 6px 16px rgba(0, 0, 0, 0.04)';
                 e.currentTarget.style.borderColor = '#eaeaea';
               }}
             >
               <div style={{
-                width: '50px',
-                height: '50px',
-                borderRadius: '12px',
+                width: '60px',
+                height: '60px',
+                borderRadius: '16px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                flexShrink: 0,
                 backgroundColor: tone.bg,
-                color: tone.color
+                color: tone.color,
+                marginBottom: '14px',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.05)'
               }}>
-                <Icon size={23}/>
+                <Icon size={28}/>
               </div>
-              <div style={{flexGrow: 1}}>
-                <h3 style={{fontSize: '16px', fontWeight: '700', color: '#1e293b', margin: '0 0 4px 0'}}>{title}</h3>
-                <p style={{fontSize: '13px', color: '#64748b', margin: '0 0 8px 0'}}>{desc}</p>
-                <span style={{fontSize: '11px', fontWeight: '600', padding: '3px 8px', background: '#f8fafc', color: '#475569', borderRadius: '6px'}}>{count}</span>
+              
+              <div style={{width: '100%'}}>
+                <h3 style={{fontSize: '17px', fontWeight: '700', color: '#1e293b', margin: '0 0 6px 0'}}>{title}</h3>
+                <p style={{fontSize: '12px', color: '#64748b', margin: '0 0 12px 0', lineHeight: '1.4'}}>{desc}</p>
               </div>
-              <ChevronLeft size={18} style={{color: '#cbd5e1'}}/>
+
+              <span style={{
+                fontSize: '11px', 
+                fontWeight: '600', 
+                padding: '4px 10px', 
+                background: '#f8fafc', 
+                color: '#475569', 
+                borderRadius: '8px',
+                border: '1px solid #f1f5f9'
+              }}>
+                {count}
+              </span>
             </Link>
           ))}
         </div>
