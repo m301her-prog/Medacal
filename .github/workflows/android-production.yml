@@ -6,9 +6,9 @@ on:
   workflow_dispatch:
     inputs:
       publish_release:
-        description: Publish a GitHub Release with the APK
+        description: Publish a GitHub Release with APK and AAB
         required: true
-        default: false
+        default: true
         type: boolean
 
 permissions:
@@ -61,12 +61,13 @@ jobs:
             android/app/build/outputs/bundle/release/*.aab
 
       - name: Publish GitHub Release
-        if: ${{ github.event_name == 'workflow_dispatch' && inputs.publish_release == true }}
+        if: ${{ github.event_name == 'push' || inputs.publish_release == true }}
         uses: softprops/action-gh-release@v2
         with:
           tag_name: android-v${{ github.run_number }}
           name: Medacal Android v${{ github.run_number }}
           generate_release_notes: true
           files: |
+            android/app/build/outputs/apk/debug/Medacal-debug.apk
             android/app/build/outputs/apk/release/*.apk
-            android/app/build/outputs/bundle/release/*.aab
+            android/app/build/outputs/bundle/release/Medacal-production.aab
