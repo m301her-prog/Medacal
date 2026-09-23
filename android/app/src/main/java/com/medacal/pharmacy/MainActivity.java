@@ -6,5 +6,6 @@ import com.medacal.pharmacy.thermal.ThermalPrinterPlugin;
 public class MainActivity extends BridgeActivity {
     public MainActivity() {
         registerPlugin(ThermalPrinterPlugin.class);
+        registerPlugin(LowStockNotificationsPlugin.class);
     }
 }

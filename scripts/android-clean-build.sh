@@ -19,6 +19,11 @@ if [[ -f android/app/src/main/java/com/medacal/pharmacy/MainActivity.java ]]; th
   mkdir -p "$NATIVE_BACKUP/java/com/medacal/pharmacy"
   cp android/app/src/main/java/com/medacal/pharmacy/MainActivity.java "$NATIVE_BACKUP/java/com/medacal/pharmacy/MainActivity.java"
 fi
+for native_file in android/app/src/main/java/com/medacal/pharmacy/*.java; do
+  [[ -f "$native_file" ]] || continue
+  mkdir -p "$NATIVE_BACKUP/java/com/medacal/pharmacy"
+  cp "$native_file" "$NATIVE_BACKUP/java/com/medacal/pharmacy/"
+done
 if [[ -d android/app/src/main/java/com/medacal/pharmacy/thermal ]]; then
   mkdir -p "$NATIVE_BACKUP/java/com/medacal/pharmacy/thermal"
   cp android/app/src/main/java/com/medacal/pharmacy/thermal/* "$NATIVE_BACKUP/java/com/medacal/pharmacy/thermal/"
