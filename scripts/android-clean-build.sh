@@ -11,10 +11,30 @@ VERSION_NAME="${VERSION_NAME:-1.0.0}"
 printf '\n== Medacal clean Android build ==\n'
 printf 'variant: %s | version: %s (%s)\n' "$BUILD_VARIANT" "$VERSION_NAME" "$VERSION_CODE"
 
+NATIVE_BACKUP="$(mktemp -d)"
+if [[ -f android/app/src/main/AndroidManifest.xml ]]; then
+  cp android/app/src/main/AndroidManifest.xml "$NATIVE_BACKUP/AndroidManifest.xml"
+fi
+if [[ -f android/app/src/main/java/com/medacal/pharmacy/MainActivity.java ]]; then
+  mkdir -p "$NATIVE_BACKUP/java/com/medacal/pharmacy"
+  cp android/app/src/main/java/com/medacal/pharmacy/MainActivity.java "$NATIVE_BACKUP/java/com/medacal/pharmacy/MainActivity.java"
+fi
+if [[ -d android/app/src/main/java/com/medacal/pharmacy/thermal ]]; then
+  mkdir -p "$NATIVE_BACKUP/java/com/medacal/pharmacy/thermal"
+  cp android/app/src/main/java/com/medacal/pharmacy/thermal/* "$NATIVE_BACKUP/java/com/medacal/pharmacy/thermal/"
+fi
 rm -rf node_modules dist android
 npm ci
 npm run build
 npx cap add android
+
+# Restore project-owned native code and manifest additions after Capacitor regeneration.
+if [[ -f "$NATIVE_BACKUP/AndroidManifest.xml" ]]; then
+  cp "$NATIVE_BACKUP/AndroidManifest.xml" android/app/src/main/AndroidManifest.xml
+fi
+if [[ -d "$NATIVE_BACKUP/java" ]]; then
+  cp -R "$NATIVE_BACKUP/java/." android/app/src/main/java/
+fi
 npx @capacitor/assets generate --android
 npx cap sync android
 
