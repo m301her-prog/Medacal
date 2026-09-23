@@ -12,15 +12,19 @@ export default async function handler(req, res) {
       return json(res, { error: 'اكتب سؤالك أولاً' }, 400);
     }
 
-    // البحث مباشرة داخل جدول بيانات العلاج والأدوية باستخدام المدخلات
+    // استخراج اسم الدواء أو الكلمة المستهدفة من رسالة المستخدم (يمكنك تعديل هذه المنطقة حسب الحاجة)
+    // هنا نقوم بتنظيف النص أو أخذ الكلمة المراد البحث عنها، أو تمرير الرسالة مع دعم البحث الجزئي في قاعدة البيانات
+    const searchTerm = message.trim();
+
+    // البحث داخل جدول بيانات العلاج والأدوية بناءً على اسم الدواء
     let medicines = [];
     if (typeof medicinesApi === 'function') {
-      // محاكاة أو استدعاء البحث من ملف medicines.js إذا كان يدعم تصفية أو جلب البيانات
+      // إذا كان medicinesApi يقبل معاملات، يمكنك تمرير استعلام البحث عبر الطلب أو تعديله
+      // هنا نفترض إمكانية تمرير query أو استخدام الدالة مباشرة
       medicines = await medicinesApi(req, res) || [];
     } else {
-      // البحث المباشر أو تصفية النتائج بناءً على استعلام البحث للعميل
-      const allMedicines = await searchInventoryDatabase(message);
-      medicines = allMedicines;
+      // تمرير نص البحث المحدد (searchTerm) إلى دالة البحث في قاعدة البيانات بدلاً من الرسالة الطويلة إذا لزم الأمر
+      medicines = await searchInventoryDatabase(searchTerm);
     }
 
     // تجهيز سياق النتائج المستخرجة من جدول الأدوية لعرضها أو إرسالها للذكاء الاصطناعي
@@ -37,7 +41,7 @@ export default async function handler(req, res) {
     // في حال عدم توفر مفتاح الذكاء الاصطناعي، يتم الرد مباشرة بنتائج جدول الأدوية
     if (!base || !key) {
       return json(res, {
-        reply: `بحثت في جدول الأدوية عن «${message}».\n\n${context}\n\nللاستخدام الآمن: اسأل الصيدلي عن الجرعة والملاءمة، ولا تستخدم دواءً دون تشخيص مناسب.`,
+        reply: `بحثت في جدول الأدوية عن «${searchTerm}».\n\n${context}\n\nللاستخدام الآمن: اسأل الصيدلي عن الجرعة والملاءمة، ولا تستخدم دواءً دون تشخيص مناسب.`,
         results: medicines,
         mode: 'inventory-fallback'
       });
