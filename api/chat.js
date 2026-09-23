@@ -1,6 +1,4 @@
 import { json, method } from './_lib.js';
-// استدعاء واجهة برمجة التطبيقات الخاصة ببيانات الأدوية والمخزون
-import medicinesApi from './medicines.js';
 
 export default async function handler(req, res) {
   if (!method(req, res, ['POST'])) return;
@@ -12,19 +10,26 @@ export default async function handler(req, res) {
       return json(res, { error: 'اكتب سؤالك أولاً' }, 400);
     }
 
-    // استخراج اسم الدواء أو الكلمة المستهدفة من رسالة المستخدم (يمكنك تعديل هذه المنطقة حسب الحاجة)
-    // هنا نقوم بتنظيف النص أو أخذ الكلمة المراد البحث عنها، أو تمرير الرسالة مع دعم البحث الجزئي في قاعدة البيانات
     const searchTerm = message.trim();
-
-    // البحث داخل جدول بيانات العلاج والأدوية بناءً على اسم الدواء
     let medicines = [];
-    if (typeof medicinesApi === 'function') {
-      // إذا كان medicinesApi يقبل معاملات، يمكنك تمرير استعلام البحث عبر الطلب أو تعديله
-      // هنا نفترض إمكانية تمرير query أو استخدام الدالة مباشرة
-      medicines = await medicinesApi(req, res) || [];
-    } else {
-      // تمرير نص البحث المحدد (searchTerm) إلى دالة البحث في قاعدة البيانات بدلاً من الرسالة الطويلة إذا لزم الأمر
-      medicines = await searchInventoryDatabase(searchTerm);
+
+    // البحث من خلال رابط الـ API الخارجي للسيرفر
+    try {
+      const apiResponse = await fetch('https://medacal.vercel.app/api/medicines', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ message: searchTerm })
+      });
+
+      if (apiResponse.ok) {
+        const data = await apiResponse.json();
+        // دعم مختلف صيغ البيانات العائدة من الـ API (سواء كانت مصفوفة مباشرة أو داخل كائن)
+        medicines = Array.isArray(data) ? data : (data.results || data.medicines || []);
+      }
+    } catch (err) {
+      console.error('فشل الاتصال برابط الـ API:', err.message);
     }
 
     // تجهيز سياق النتائج المستخرجة من جدول الأدوية لعرضها أو إرسالها للذكاء الاصطناعي
