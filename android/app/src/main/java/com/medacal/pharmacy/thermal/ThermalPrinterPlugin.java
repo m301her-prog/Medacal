@@ -149,7 +149,7 @@ public class ThermalPrinterPlugin extends Plugin {
         receipt.append("------------------------------\n");
         JSArray items = call.getArray("items");
         if (items != null) for (int i = 0; i < items.length(); i++) {
-            try { JSObject item = items.getJSObject(i); receipt.append(item.optString("name", "دواء")).append("  ").append(item.optInt("quantity", 1)).append("  ").append(item.optString("total", "0.00")).append("\n"); } catch (Exception ignored) {}
+            try { JSObject item = JSObject.fromJSONObject(items.getJSONObject(i)); receipt.append(item.optString("name", "دواء")).append("  ").append(item.optInt("quantity", 1)).append("  ").append(item.optString("total", "0.00")).append("\n"); } catch (Exception ignored) {}
         }
         receipt.append("------------------------------\n");
         receipt.append("الإجمالي: ").append(total).append(" ر.س\n\n").append(footer).append("\n");
