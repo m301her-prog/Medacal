@@ -1,4 +1,5 @@
 import {useEffect,useMemo,useRef,useState} from 'react';
+import {useLocation} from 'react-router-dom';
 import {AlertTriangle,Barcode,Boxes,CalendarDays,PackagePlus,Search} from 'lucide-react';
 import api from '../lib/ApiService';
 import DeleteService from '../lib/DeleteService';
@@ -8,12 +9,14 @@ import {exportDrugLibrary,findDrugByBarcode,loadDrugLibrary,mergeBarcodeMappings
 
 const emptyForm={trade_name:'',scientific_name:'',active_ingredient:'',barcode:'',manufacturer:'',dosage_form:'',strength:'',package_size:'',stock_quantity:0,selling_price:0,expiry_date:''};
 export default function Inventory(){
+ const location=useLocation();
  const [items,setItems]=useState([]);const [query,setQuery]=useState('');const barcodeFileRef=useRef(null);const [bulkStatus,setBulkStatus]=useState('');const [showForm,setShowForm]=useState(false);const [error,setError]=useState('');const [deleting,setDeleting]=useState(null);const [library,setLibrary]=useState([]);const [libraryError,setLibraryError]=useState('');const [form,setForm]=useState(emptyForm);
  useEffect(()=>{api.listMedicines().then(d=>setItems(d.items||[])).catch(e=>setError(e.message));loadDrugLibrary().then(setLibrary).catch(e=>setLibraryError(e.message))},[]);
  const filtered=useMemo(()=>items.filter(x=>JSON.stringify(x).toLowerCase().includes(query.toLowerCase())),[items,query]);
  const suggestions=useMemo(()=>searchDrugLibrary(library,form.trade_name),[library,form.trade_name]);
  async function importBarcodes(file){if(!file)return;setBulkStatus('جاري قراءة ملف الباركود...');try{const raw=await file.text();const data=file.name.toLowerCase().endsWith('.json')?JSON.parse(raw):parseCsv(raw);const result=mergeBarcodeMappings(library,data);setLibrary(result.items);setBulkStatus(`تمت مطابقة ${result.matched} من ${result.total} سجل. تم حفظ الأكواد على هذا الجهاز.`)}catch(e){setBulkStatus(`تعذر استيراد الملف: ${e.message||'صيغة غير صحيحة'}`)}finally{if(barcodeFileRef.current)barcodeFileRef.current.value=''}}
- function applyDrug(drug){setForm(x=>({...x,trade_name:drug.trade_name||x.trade_name,scientific_name:drug.scientific_name||x.scientific_name,active_ingredient:drug.active_ingredient||x.active_ingredient,barcode:drug.barcode||x.barcode,manufacturer:drug.manufacturer||x.manufacturer,dosage_form:drug.dosage_form||x.dosage_form,strength:drug.strength||x.strength,package_size:drug.package_size||x.package_size}));setError('');}
+ function applyDrug(drug){setForm(x=>({...x,trade_name:drug.trade_name||x.trade_name,scientific_name:drug.scientific_name||x.scientific_name,active_ingredient:drug.active_ingredient||x.active_ingredient,barcode:drug.barcode||x.barcode,manufacturer:drug.manufacturer||x.manufacturer,dosage_form:drug.dosage_form||x.dosage_form,strength:drug.strength||x.strength,package_size:drug.package_size||x.package_size,selling_price:drug.library_price??x.selling_price}));setError('تم جلب تفاصيل الدواء من المكتبة. أدخل الكمية والصلاحية وراجع السعر قبل الحفظ.');}
+ useEffect(()=>{if(location.state?.openForm){setShowForm(true);if(location.state.drug)applyDrug(location.state.drug)}},[location.state]);
  function onBarcode(code){const value=String(code||'').trim();const drug=findDrugByBarcode(library,value);if(drug){applyDrug(drug);setError(`تم العثور على ${drug.trade_name||'الدواء'} في المكتبة وتم تعبئة التفاصيل.`)}else{setForm(x=>({...x,barcode:value}));setError(`الباركود ${value} غير موجود في المكتبة. أضف التفاصيل يدويًا ثم احفظه.`)}}
  function update(name,value){setForm(x=>({...x,[name]:value}));if(name==='barcode'&&value.trim())onBarcode(value)}
  async function add(e){e.preventDefault();setError('');const next={...form,stock_quantity:Number(form.stock_quantity),selling_price:Number(form.selling_price),min_stock_alert:5};try{const d=await api.createMedicine(next);setItems(x=>[d.item||next,...x]);setForm(emptyForm);setShowForm(false)}catch(e){setError(e.message)}}

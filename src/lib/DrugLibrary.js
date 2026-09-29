@@ -53,4 +53,4 @@ export function loadDrugLibrary(){
   return promise;
 }
 export function findDrugByBarcode(items,barcode){const value=String(barcode||'').trim();if(!value)return null;return items.find(item=>String(item.barcode||'').trim()===value)||null}
-export function searchDrugLibrary(items,query){const q=String(query||'').trim().toLowerCase();if(!q)return [];return items.filter(item=>[item.trade_name,item.scientific_name,item.active_ingredient,item.barcode].some(value=>String(value||'').toLowerCase().includes(q))).slice(0,8)}
+export function searchDrugLibrary(items,query,limit=8){const q=String(query||'').trim().toLowerCase();if(!q)return [];const result=items.filter(item=>[item.trade_name,item.commercial_name_ar,item.commercial_name_en,item.scientific_name,item.active_ingredient,item.manufacturer,item.barcode].some(value=>String(value||'').toLowerCase().includes(q)));return Number.isFinite(limit)?result.slice(0,limit):result}

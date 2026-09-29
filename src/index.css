@@ -42,3 +42,5 @@
 /* Bulk barcode import */
 .inventory-head-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.library-status{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:12px 0;padding:10px 12px;border:1px solid #d8eee7;border-radius:8px;background:#f3fcf9;color:#46736a;font-size:10px}.library-status .text-button{border:0;background:transparent;color:var(--mint-dark);cursor:pointer;text-decoration:underline;font-size:10px;padding:0}.library-status .text-button:hover{color:var(--ink)}
 @media(max-width:600px){.inventory-head-actions{width:100%}.inventory-head-actions>*{flex:1}}
+.library-pagination{display:flex;align-items:center;justify-content:center;gap:16px;padding-top:18px;color:var(--muted);font-size:11px}.library-pagination .outline-button{display:flex;align-items:center;gap:5px}.library-pagination button:disabled{opacity:.45;cursor:not-allowed}.drug-library-panel .table-row{grid-template-columns:1.4fr 1.35fr 1fr 1fr 90px}.drug-library-panel .text-button{justify-content:center;white-space:nowrap}
+.library-source-note{display:block;color:#b97814;font-size:10px;margin-top:6px}
