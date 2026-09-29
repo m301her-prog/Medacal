@@ -11,14 +11,17 @@ function asArray(payload){
 export function normalizeDrug(item={}){
   return {
     ...item,
-    trade_name:item.trade_name||item.tradeName||item.name||item.brand_name||item.brand||'',
+    trade_name:item.trade_name||item.tradeName||item.name||item.brand_name||item.brand||item.commercial_name_ar||item.commercial_name_en||'',
     scientific_name:item.scientific_name||item.scientificName||item.generic_name||item.generic||'',
-    active_ingredient:item.active_ingredient||item.activeIngredient||item.active||item.composition||'',
+    active_ingredient:item.active_ingredient||item.activeIngredient||item.active||item.composition||item.scientific_name||'',
     barcode:String(item.barcode||item.ean||item.gtin||item.code||'').trim(),
     manufacturer:item.manufacturer||item.company||item.pharmaceutical_company||'',
     dosage_form:item.dosage_form||item.dosageForm||item.form||'',
     strength:item.strength||item.concentration||'',
-    package_size:item.package_size||item.pack||item.pack_size||''
+    package_size:item.package_size||item.pack||item.pack_size||'',
+    drug_class:item.drug_class||item.class||'',
+    route:item.route||item.administration_route||'',
+    library_price:item.price_egp??item.price??''
   };
 }
 
