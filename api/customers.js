@@ -1,1 +1,32 @@
-import {json,method,sql} from './_lib.js';export default async function handler(req,res){if(!method(req,res,['GET','POST','DELETE']))return;try{if(!sql){if(req.method==='DELETE')return json(res,{ok:true,demo:true});return json(res,{customers:[{id:'demo-customer',name:'عميل تجريبي',phone:'966500000000',credit_balance:0}]})}if(req.method==='GET'){const customers=await sql`SELECT * FROM customers ORDER BY created_at DESC LIMIT 100`;return json(res,{customers})}if(req.method==='DELETE'){const id=req.body?.id||req.query?.id;if(!id)return json(res,{error:'معرف العميل مطلوب'},400);await sql`UPDATE sales SET customer_id=NULL WHERE customer_id=${id}`;await sql`DELETE FROM debts_ledger WHERE customer_id=${id}`;await sql`DELETE FROM customers WHERE id=${id}`;return json(res,{ok:true,id})}const c=req.body;if(c.payment_amount&&c.id){await sql`UPDATE customers SET credit_balance=GREATEST(0,credit_balance-${c.payment_amount}) WHERE id=${c.id}`;await sql`INSERT INTO debts_ledger(customer_id,amount,transaction_type,notes) VALUES(${c.id},${c.payment_amount},'payment',${c.notes||'تسديد'})`;return json(res,{ok:true})}const rows=await sql`INSERT INTO customers(name,phone,address) VALUES(${c.name},${c.phone||null},${c.address||null}) RETURNING *`;return json(res,{customer:rows[0]},201)}catch(e){return json(res,{error:e.message},500)}}
+import {json,method,sql} from './_lib.js';
+
+export default async function handler(req,res){
+  if(!method(req,res,['GET','POST','DELETE']))return;
+  try{
+    if(!sql){
+      if(req.method==='GET')return json(res,{customers:[],configured:false});
+      return json(res,{error:'قاعدة البيانات غير مهيأة'},503);
+    }
+    if(req.method==='GET'){
+      const customers=await sql`SELECT * FROM customers ORDER BY created_at DESC LIMIT 100`;
+      return json(res,{customers});
+    }
+    if(req.method==='DELETE'){
+      const id=req.body?.id||req.query?.id;
+      if(!id)return json(res,{error:'معرف العميل مطلوب'},400);
+      await sql`UPDATE sales SET customer_id=NULL WHERE customer_id=${id}`;
+      await sql`DELETE FROM debts_ledger WHERE customer_id=${id}`;
+      await sql`DELETE FROM customers WHERE id=${id}`;
+      return json(res,{ok:true,id});
+    }
+    const c=req.body||{};
+    if(c.payment_amount&&c.id){
+      await sql`UPDATE customers SET credit_balance=GREATEST(0,credit_balance-${c.payment_amount}) WHERE id=${c.id}`;
+      await sql`INSERT INTO debts_ledger(customer_id,amount,transaction_type,notes) VALUES(${c.id},${c.payment_amount},'payment',${c.notes||'تسديد'})`;
+      return json(res,{ok:true});
+    }
+    if(!c.name)return json(res,{error:'اسم العميل مطلوب'},400);
+    const rows=await sql`INSERT INTO customers(name,phone,address) VALUES(${c.name},${c.phone||null},${c.address||null}) RETURNING *`;
+    return json(res,{customer:rows[0]},201);
+  }catch(e){return json(res,{error:e.message},500)}
+}
