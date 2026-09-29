@@ -1,4 +1,4 @@
-import {useState} from 'react';
+import {useEffect,useState} from 'react';
 import {NavLink,Routes,Route,useLocation} from 'react-router-dom';
 import {Activity,BarChart3,Bell,Box,ChevronLeft,FileText,LayoutDashboard,Menu,MessageCircle,PackageSearch,Settings,ShoppingCart,Truck,Users,Wifi,Download} from 'lucide-react';
 import Dashboard from './pages/Dashboard';
@@ -29,6 +29,8 @@ export default function App(){
   const [open,setOpen]=useState(false);
   const location=useLocation();
   const current=links.find(x=>x.to===location.pathname);
+  useEffect(()=>{window.__formatechMenuOpen=open;return()=>{delete window.__formatechMenuOpen}},[open]);
+  useEffect(()=>{const close=()=>setOpen(false);window.addEventListener('formatech:close-menu',close);return()=>window.removeEventListener('formatech:close-menu',close)},[]);
   return <div className="app-shell">
     <InstallPrompt/>
     <aside className={open?'sidebar open':'sidebar'}>
