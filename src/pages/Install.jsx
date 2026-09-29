@@ -2,7 +2,7 @@ import {Download, ExternalLink, Monitor, Smartphone, Tablet, Wifi, CheckCircle2,
 import DesktopDownloadButton from '../components/DesktopDownloadButton';
 import {useEffect, useMemo, useState} from 'react';
 
-const APK_URL = 'https://github.com/m301her-prog/Medacal/releases/latest/download/Medacal-debug.apk';
+const APK_URL = 'https://github.com/m301her-prog/Medacal/releases/latest/download/Medacal-release.apk';
 
 function detectDevice(){
   const ua = navigator.userAgent || '';

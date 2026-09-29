@@ -60,6 +60,11 @@ jobs:
             android/app/build/outputs/apk/release/*.apk
             android/app/build/outputs/bundle/release/*.aab
 
+      - name: Verify installable release APK
+        run: |
+          $ANDROID_HOME/build-tools/35.0.0/apksigner verify --verbose android/app/build/outputs/apk/release/Medacal-release.apk
+          $ANDROID_HOME/build-tools/35.0.0/aapt2 dump badging android/app/build/outputs/apk/release/Medacal-release.apk | grep -E "package: name='com.medacal.pharmacy'|sdkVersion|minSdkVersion"
+
       - name: Publish GitHub Release
         if: ${{ github.event_name == 'push' || inputs.publish_release == true }}
         uses: softprops/action-gh-release@v2
@@ -69,5 +74,5 @@ jobs:
           generate_release_notes: true
           files: |
             android/app/build/outputs/apk/debug/Medacal-debug.apk
-            android/app/build/outputs/apk/release/*.apk
+            android/app/build/outputs/apk/release/Medacal-release.apk
             android/app/build/outputs/bundle/release/Medacal-production.aab

@@ -99,6 +99,9 @@ fi
 if [[ -f android/app/build/outputs/apk/debug/app-debug.apk ]]; then
   cp android/app/build/outputs/apk/debug/app-debug.apk android/app/build/outputs/apk/debug/Medacal-debug.apk
 fi
+if [[ -f android/app/build/outputs/apk/release/app-release.apk ]]; then
+  cp android/app/build/outputs/apk/release/app-release.apk android/app/build/outputs/apk/release/Medacal-release.apk
+fi
 if [[ -f android/app/build/outputs/bundle/release/app-release.aab ]]; then
   cp android/app/build/outputs/bundle/release/app-release.aab android/app/build/outputs/bundle/release/Medacal-production.aab
 fi
