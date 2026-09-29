@@ -1,7 +1,7 @@
 const DB_NAME = 'formatech-local-db';
 const DB_VERSION = 1;
 const STORE = 'state';
-const KEYS = { medicines: 'medicines', queue: 'sync-queue', lastSync: 'last-sync' };
+const KEYS = { medicines: 'medicines', customers: 'customers', queue: 'sync-queue', lastSync: 'last-sync' };
 
 let dbPromise;
 function openDb() {
@@ -49,7 +49,7 @@ async function migrateLegacyData() {
   if (!db) return;
   const marker = await getValue('migration-v1', false);
   if (marker) return;
-  for (const [key, fallback] of [[KEYS.medicines, []], [KEYS.queue, []]]) {
+  for (const [key, fallback] of [[KEYS.medicines, []], [KEYS.customers, []], [KEYS.queue, []]]) {
     const value = readLegacy(key, fallback);
     if (value.length) await setValue(key, value);
   }
@@ -63,6 +63,8 @@ const ready = migrateLegacyData().catch((error) => console.warn('تعذر تجه
 export const OfflineStore = {
   async getMedicines() { await ready; return getValue(KEYS.medicines, []); },
   async saveMedicines(items) { await ready; return setValue(KEYS.medicines, items || []); },
+  async getCustomers() { await ready; return getValue(KEYS.customers, []); },
+  async saveCustomers(items) { await ready; return setValue(KEYS.customers, items || []); },
   async getQueue() { await ready; return getValue(KEYS.queue, []); },
   async enqueue(operation) {
     await ready;
