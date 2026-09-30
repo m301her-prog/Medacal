@@ -1,4 +1,4 @@
-const LIBRARY_URL='/egyptian-drugs.json';
+const LIBRARY_URLS=['/egyptian-drugs-part1.min.json','/egyptian-drugs-part2.min.json','/egyptian-drugs-part3.min.json'];
 const BARCODE_MAP_KEY='formatech.drug-barcode-map';
 
 function asArray(payload){
@@ -49,7 +49,7 @@ export function exportDrugLibrary(items){
 
 let promise;
 export function loadDrugLibrary(){
-  if(!promise)promise=fetch(LIBRARY_URL,{headers:{Accept:'application/json'}}).then(r=>{if(!r.ok)throw new Error('تعذر تحميل مكتبة الأدوية المحلية');return r.json()}).then(asArray).then(items=>applySavedBarcodes(items.map(normalizeDrug)));
+  if(!promise)promise=Promise.all(LIBRARY_URLS.map(async url=>{const response=await fetch(url,{headers:{Accept:'application/json'}});if(!response.ok)throw new Error(`تعذر تحميل جزء مكتبة الأدوية: ${url}`);return asArray(await response.json())})).then(parts=>parts.flat()).then(items=>applySavedBarcodes(items.map(normalizeDrug)));
   return promise;
 }
 export function findDrugByBarcode(items,barcode){const value=String(barcode||'').trim();if(!value)return null;return items.find(item=>String(item.barcode||'').trim()===value)||null}
