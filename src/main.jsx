@@ -6,6 +6,7 @@ import {Network} from '@capacitor/network';
 import App from './App';
 import api from './lib/ApiService';
 import {notifyLowStock,requestLowStockNotifications} from './lib/LowStockNotifications';
+import {notifyExpiry} from './lib/ExpiryAlerts';
 import './index.css';
 
 if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(()=>{}));
@@ -15,6 +16,7 @@ async function refreshOfflineState(){
     await api.syncOfflineQueue();
     const data=await api.listMedicines();
     await notifyLowStock(data.items||[]);
+    await notifyExpiry(data.items||[]);
   }catch(error){console.warn('offline sync:',error)}
 }
 

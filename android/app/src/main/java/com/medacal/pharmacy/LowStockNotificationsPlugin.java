@@ -45,14 +45,16 @@ public class LowStockNotificationsPlugin extends Plugin {
     public void notify(PluginCall call) {
         int count = call.getInt("count", 0);
         String names = call.getString("names", "أصناف دوائية");
+        String title = call.getString("title", "تنبيه مخزون فرما تيك");
+        String message = call.getString("message", count + " أصناف تحت الحد الأدنى: " + names);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
             call.reject("لم يتم السماح بإشعارات Android"); return;
         }
         NotificationCompat.Builder builder = new NotificationCompat.Builder(getContext(), CHANNEL_ID)
             .setSmallIcon(com.medacal.pharmacy.R.mipmap.ic_launcher)
-            .setContentTitle("تنبيه مخزون فرما تيك")
-            .setContentText(count + " أصناف تحت الحد الأدنى: " + names)
-            .setStyle(new NotificationCompat.BigTextStyle().bigText(count + " أصناف تحت الحد الأدنى للمخزون: " + names))
+            .setContentTitle(title)
+            .setContentText(message)
+            .setStyle(new NotificationCompat.BigTextStyle().bigText(message))
             .setPriority(NotificationCompat.PRIORITY_HIGH).setAutoCancel(true);
         NotificationManagerCompat.from(getContext()).notify(9001, builder.build());
         JSObject result = new JSObject(); result.put("sent", true); result.put("count", count); call.resolve(result);
